@@ -11,7 +11,18 @@
       </div>
       <span v-show="!configVisibe" class="iconfont open-icon" @click="handleOpenConfig">&#xe689;</span>
     </div>
+
+    <a-modal v-model:visible="visibleModalLine" title="Basic Modal" @ok="mod">
+
+      <a-radio-group v-model="modalLineParam.bol">
+        <a-radio :value="1">满足</a-radio>
+        <a-radio :value="0">不满足</a-radio>
+      </a-radio-group>
+    </a-modal>
+
   </div>
+
+
 </template>
 
 <script>
@@ -21,7 +32,6 @@ import '@antv/x6-vue-shape'
 import NodeConfigContainer from './components/NodeConfigContainer'
 import EdgeConfigContainer from './components/EdgeConfigContainer'
 import GraphConfigContainer from './components/GraphConfigContainer'
-import Count from './components/Count.vue'
 
 export default {
   name: 'CreateFlow',
@@ -40,7 +50,16 @@ export default {
       curNode: {},
       curEdge: {},
       configVisibe: true,
-      isNode: true
+      isNode: true,
+      nodeParam: {},
+      edgeParam: {},
+      visibleModalLine: false,
+      modalLineParam: {
+        bol: 0
+      },
+      source: {},
+
+
     }
   },
   methods: {
@@ -124,6 +143,25 @@ export default {
         history: true
       })
     },
+    mod(){
+      this.visibleModalLine = false
+      const source = this.curEdge.getSourceCell()
+
+      console.log("11111=1=1=1=1=1=1=1=",source)
+      var attrs1 = source.getAttrs()
+      // 如果开始节点是条件节点则需要做输入满足或者不满足
+      if (attrs1.type == '条件' || attrs1.type == '观察器') {
+        this.curEdge.removeLabelAt(0)
+        this.curEdge.appendLabel({
+          attrs: {
+            text: {
+              text: this.modalLineParam.bol == 0 ? '不满足' : '满足',
+            }
+          }
+        })
+      }
+      this.visibleModalLine = false
+    },
     // 画布绑定监听事件
     graphOnEvent () {
       // 控制连接桩显示/隐藏
@@ -152,12 +190,12 @@ export default {
         this.curNode = node
         this.isNode = true
         // todo 监听到画布添加了node之后，调后端接口创建一个接口
-        // console.log('node:added')
-        // console.log(node)
-        // console.log(node.attrs.text.fontSize)
-        // node.setLabel('xwtest') // 修改label的值
-        // console.log('监听到拖入一个控件id：' + node.id)
-        // console.log(this.graph.getNodes())
+        console.log('1111', node)
+        // 获取节点类型
+        let attrs = node.getAttrs()
+        let nodeType = attrs.type
+        console.log(nodeType)
+        // todo: 根据不同的节点类型做不同的弹框
       })
       // 监听画布移除节点动作
       this.graph.on('node:removed', ({node, index, options}) => {
@@ -172,7 +210,6 @@ export default {
         // todo 监听到连接线动作之后，调后端接口绑定关系
         // console.log('edge:added')
         // console.log(edge)
-
 
       })
       // 监听点击节点之间连接动作
@@ -200,17 +237,23 @@ export default {
         // console.log('edge:removed')
         // console.log(edge)
       })
-      this.graph.on('edge:connected', ({ isNew, edge }) => {
+      this.graph.on('edge:connected', ({isNew, edge}) => {
         if (isNew) {
           const source = edge.getSourceCell()
           const target = edge.getTarget()
-          console.log(this.graph.getNodes())
-          console.log(this.graph.getCells())
-          // console.log(this.graph.getCellById(source.cell))
+          // todo 线段链接
+          console.log('source', source)
+          console.log('target', target)
+          this.curEdge = edge
+          var attrs1 = source.getAttrs()
+          // 如果开始节点是条件节点则需要做输入满足或者不满足
+          if (attrs1.type == '条件' || attrs1.type == '观察器') {
+            this.visibleModalLine = true
+          }
+
           // console.log(this.graph.getCellById(target.cell))
         }
       })
-
 
     },
     // 绑定画布快捷键
@@ -576,19 +619,13 @@ export default {
         },
         true
       )
-      Graph.registerNode("my-count", {
-        inherit: "vue-shape",
-        x: 200,
-        y: 150,
-        width: 150,
-        height: 100,
-        component: Count,
-      });
 
       const r1 = this.graph.createNode({
         shape: 'custom-rect',
         label: '执行器',
+        type: '执行器',
         attrs: {
+          type: '执行器',
           body: {
             rx: 18,
             ry: 26
@@ -598,30 +635,44 @@ export default {
       const r2 = this.graph.createNode({
         shape: 'custom-circle',
         label: '观察器',
-        type:"watcher"
+        type: '观察器',
+        attrs: {
+          type: '观察器'
+        }
+      })
+      const r3 = this.graph.createNode({
+        shape: 'custom-circle',
+        label: '参数',
+        type: '参数',
+        attrs: {
+          type: '参数',
+          body: {
+            fill: '#fca'
+          },
+        }
       })
       const r4 = this.graph.createNode({
         shape: 'custom-polygon',
         attrs: {
+          type: '条件',
           body: {
             refPoints: '0,10 10,0 20,10 10,20'
           }
         },
         label: '条件'
       })
-
-
-      const z = this.graph.createNode({
-        shape: "my-count",
-        x: 400,
-        y: 150,
-        width: 150,
-        height: 100,
-        data: {
-          num: 0,
-        },
+      const r8 = this.graph.createNode({
+        shape: 'custom-path',
+        label: '响应',
+        attrs: {
+          type: '响应',
+          body: {
+            refD: 'M 0 0 0 4 C 10 8 15 2 25 5 L 25 0 Z'
+          }
+        }
       })
-      this.stencil.load([r1, r2, r4], 'group1')
+
+      this.stencil.load([r1, r3, r2, r4, r8], 'group1')
     },
     // 更新node的数据
     handleNode (data) {
@@ -665,10 +716,12 @@ export default {
     this.initPorts()
     // 渲染所有左侧控件图形
     this.loadStencil()
+    // 初始化数据
+    // this.graph.fromJSON(d)
+
   },
 
-  watch: {
-  }
+  watch: {}
 }
 </script>
 

@@ -37,6 +37,17 @@ export default {
   methods: {
     ooo () {
       console.log(this.graph.toJSON())
+
+      const jsonStr = JSON.stringify(this.graph.toJSON());
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = 'data.json';
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      URL.revokeObjectURL(url);
+
     },
 
     // 保存成svg图片
