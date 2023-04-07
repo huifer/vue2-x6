@@ -20,10 +20,9 @@
       </a-radio-group>
     </a-modal>
 
-    <a-modal v-model:visible="nodeInfoVisible" title="Basic Modal" @ok="closeNodeInfo">
+    <a-modal v-model:visible="nodeInfoVisible" width="80%" title="Basic Modal" @ok="closeNodeInfo">
 
       <div>
-        {{ this.curNodeType }}
         <Condition v-if="curNodeType=='条件'"></Condition>
         <Execute v-if="curNodeType=='执行器'"></Execute>
         <ParamMapping v-if="curNodeType=='参数'"></ParamMapping>
@@ -218,7 +217,6 @@ export default {
         console.log('ccc', node)
         this.curNodeType = data.type
         this.nodeInfoVisible = true
-
       })
       // 监听画布添加节点动作
       this.graph.on('node:added', ({node, index, options}) => {
