@@ -20,6 +20,17 @@
       </a-radio-group>
     </a-modal>
 
+    <a-modal v-model:visible="nodeInfoVisible" title="Basic Modal" @ok="closeNodeInfo">
+
+      <div>
+        {{ this.curNodeType }}
+        <Condition v-if="curNodeType=='条件'"></Condition>
+        <Execute v-if="curNodeType=='执行器'"></Execute>
+        <ParamMapping v-if="curNodeType=='参数'"></ParamMapping>
+        <Response v-if="curNodeType=='响应'"></Response>
+        <Watcher v-if="curNodeType=='观察器'"></Watcher>
+      </div>
+    </a-modal>
   </div>
 
 
@@ -27,11 +38,18 @@
 
 <script>
 import {Addon, Graph, Shape} from '@antv/x6'
+import d from './a'
 import {Sketch} from 'vue-color'
 import '@antv/x6-vue-shape'
 import NodeConfigContainer from './components/NodeConfigContainer'
 import EdgeConfigContainer from './components/EdgeConfigContainer'
 import GraphConfigContainer from './components/GraphConfigContainer'
+
+import Condition from './nodeview/Conaditon'
+import Execute from './nodeview/Execute'
+import ParamMapping from './nodeview/ParamMapping'
+import Response from './nodeview/Response'
+import Watcher from './nodeview/Watcher'
 
 export default {
   name: 'CreateFlow',
@@ -39,10 +57,16 @@ export default {
     GraphConfigContainer,
     NodeConfigContainer,
     EdgeConfigContainer,
+    Condition,
+    Execute,
+    ParamMapping,
+    Response,
+    Watcher,
     'sketch-picker': Sketch
   },
   data () {
     return {
+      nodeInfoVisible: false,
       visible: true,
       graph: {},
       stencil: {},
@@ -59,6 +83,7 @@ export default {
       },
       source: {},
 
+      curNodeType: '',
 
     }
   },
@@ -143,11 +168,11 @@ export default {
         history: true
       })
     },
-    mod(){
+    mod () {
       this.visibleModalLine = false
       const source = this.curEdge.getSourceCell()
 
-      console.log("11111=1=1=1=1=1=1=1=",source)
+      console.log('11111=1=1=1=1=1=1=1=', source)
       var attrs1 = source.getAttrs()
       // 如果开始节点是条件节点则需要做输入满足或者不满足
       if (attrs1.type == '条件' || attrs1.type == '观察器') {
@@ -162,6 +187,11 @@ export default {
       }
       this.visibleModalLine = false
     },
+    closeNodeInfo () {
+      this.curNodeType = ''
+      this.nodeInfoVisible = false
+    },
+
     // 画布绑定监听事件
     graphOnEvent () {
       // 控制连接桩显示/隐藏
@@ -184,6 +214,11 @@ export default {
       this.graph.on('node:click', ({e, x, y, node, view}) => {
         this.curNode = node
         this.isNode = true
+        var data = node.getData()
+        console.log('ccc', node)
+        this.curNodeType = data.type
+        this.nodeInfoVisible = true
+
       })
       // 监听画布添加节点动作
       this.graph.on('node:added', ({node, index, options}) => {
@@ -624,8 +659,10 @@ export default {
         shape: 'custom-rect',
         label: '执行器',
         type: '执行器',
-        attrs: {
+        data: {
           type: '执行器',
+        },
+        attrs: {
           body: {
             rx: 18,
             ry: 26
@@ -635,8 +672,9 @@ export default {
       const r2 = this.graph.createNode({
         shape: 'custom-circle',
         label: '观察器',
-        type: '观察器',
-        attrs: {
+        data: {
+          type: '观察器',
+        }, attrs: {
           type: '观察器'
         }
       })
@@ -644,8 +682,10 @@ export default {
         shape: 'custom-circle',
         label: '参数',
         type: '参数',
-        attrs: {
+        data: {
           type: '参数',
+        },
+        attrs: {
           body: {
             fill: '#fca'
           },
@@ -653,8 +693,10 @@ export default {
       })
       const r4 = this.graph.createNode({
         shape: 'custom-polygon',
-        attrs: {
+        data: {
           type: '条件',
+        },
+        attrs: {
           body: {
             refPoints: '0,10 10,0 20,10 10,20'
           }
@@ -664,8 +706,10 @@ export default {
       const r8 = this.graph.createNode({
         shape: 'custom-path',
         label: '响应',
-        attrs: {
+        data: {
           type: '响应',
+        },
+        attrs: {
           body: {
             refD: 'M 0 0 0 4 C 10 8 15 2 25 5 L 25 0 Z'
           }
@@ -717,7 +761,7 @@ export default {
     // 渲染所有左侧控件图形
     this.loadStencil()
     // 初始化数据
-    // this.graph.fromJSON(d)
+    this.graph.fromJSON(d)
 
   },
 

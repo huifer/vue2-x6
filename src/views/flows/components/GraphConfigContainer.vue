@@ -38,7 +38,8 @@ export default {
     ooo () {
       console.log(this.graph.toJSON())
 
-      const jsonStr = JSON.stringify(this.graph.toJSON());
+      const jsonStr = JSON.stringify(this.graph.toJSON())
+      console.log(jsonStr)
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
