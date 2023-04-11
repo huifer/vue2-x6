@@ -49,6 +49,7 @@ import Execute from './nodeview/Execute'
 import ParamMapping from './nodeview/ParamMapping'
 import Response from './nodeview/Response'
 import Watcher from './nodeview/Watcher'
+import Rectangle from './Rectangle'
 
 export default {
   name: 'CreateFlow',
@@ -216,8 +217,10 @@ export default {
         this.isNode = true
         var data = node.getData()
         console.log('ccc', node)
-        this.curNodeType = data.type
-        this.nodeInfoVisible = true
+        if (data) {
+          this.curNodeType = data.type
+          this.nodeInfoVisible = true
+        }
       })
       // 监听画布添加节点动作
       this.graph.on('node:added', ({node, index, options}) => {
@@ -762,6 +765,33 @@ export default {
     // 初始化数据
     this.graph.fromJSON(d)
 
+
+    // // 用于判断是否相交
+    // const parent =this.graph.addNode({
+    //   x: 60,
+    //   y: 40,
+    //   width: 400,
+    //   height: 400,
+    //   zIndex: 1,
+    //   label: 'Parent\n(try to move me)',
+    // })
+    // let pr = new Rectangle(parent.position().x, parent.position().y, parent.size().width, parent.size().height)
+    //
+    // let nodes = this.graph.getNodes()
+    // for (let index in nodes) {
+    //   console.log(nodes[index].position())
+    //   console.log(nodes[index].size())
+    //   console.log(nodes[index].label)
+    //
+    //   let r = new Rectangle(nodes[index].position().x, nodes[index].position().y, nodes[index].size().width, nodes[index].size().height)
+    //
+    //   if (
+    //     pr.isIntersected(r)
+    //     || r.isIntersected(pr)
+    //   ) {
+    //     parent.addChild(nodes[index])
+    //   }
+    // }
   },
 
   watch: {}
