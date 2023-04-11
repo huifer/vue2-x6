@@ -172,7 +172,8 @@ export default {
       const source = this.curEdge.getSourceCell()
 
       console.log('11111=1=1=1=1=1=1=1=', source)
-      var attrs1 = source.getAttrs()
+      var attrs1 = source.getData()
+      console.log("1111111111111",attrs1)
       // 如果开始节点是条件节点则需要做输入满足或者不满足
       if (attrs1.type == '条件' || attrs1.type == '观察器') {
         this.curEdge.removeLabelAt(0)
@@ -278,7 +279,7 @@ export default {
           console.log('source', source)
           console.log('target', target)
           this.curEdge = edge
-          var attrs1 = source.getAttrs()
+          var attrs1 = source.getData()
           // 如果开始节点是条件节点则需要做输入满足或者不满足
           if (attrs1.type == '条件' || attrs1.type == '观察器') {
             this.visibleModalLine = true
